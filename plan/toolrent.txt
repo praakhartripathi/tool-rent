@@ -1,0 +1,649 @@
+
+---
+
+# TOOLRENT SaaS PLATFORM
+## Product Development Plan
+**Version 1.0 | MVP Timeline: 10 Weeks | Target Market: India**
+
+---
+
+# 1. Product Overview & Goals
+
+ToolRent is a cloud-based, multi-tenant SaaS platform purpose-built for tool and equipment rental businesses across India. It provides each rental business (tenant) with a fully branded, self-contained digital storefront and back-office management suite — eliminating dependency on spreadsheets, manual bookings, and fragmented cash workflows.
+
+**Vision:** "Empower every tool rental business in India — from a single-shop owner in Pune to a multi-city fleet operator in Bengaluru — with enterprise-grade digital infrastructure, accessible from any device, at an affordable SaaS price."
+
+**Mission:** To digitize the fragmented and largely offline tool rental market in India by providing rental businesses with an easy-to-use SaaS platform covering inventory management, customer bookings, payments, and communication — reducing operational overhead by up to 60%.
+
+### Core Goals (MVP)
+- Enable rental businesses to onboard and start accepting bookings within 24 hours
+- Provide customers a seamless online tool browsing and rental experience (mobile-first)
+- Support end-to-end rental lifecycle: browse → book → pay → track → return → review
+- Handle security deposits and refunds via Razorpay (UPI-first)
+- Deliver a scalable multi-tenant foundation supporting 100+ tenants at MVP launch
+
+### Success Metrics
+
+| Metric | Month 3 | Month 6 |
+|---|---|---|
+| Active Tenants | 25+ | 100+ |
+| Monthly Bookings | 500+ | 5,000+ |
+| Payment Success Rate | >95% | >97% |
+| Customer CSAT | >4.0/5 | >4.3/5 |
+| Platform Uptime | 99.5% | 99.9% |
+| Avg. Onboarding Time | <2 hours | <1 hour |
+
+---
+
+# 2. Target Users & Use Cases
+
+### Persona 1: Tenant Admin (Rental Business Owner)
+- **Who:** Small to mid-size tool rental shop owner (construction equipment, power tools, party supplies)
+- **Location:** Tier-1 and Tier-2 Indian cities (Mumbai, Pune, Bengaluru, Hyderabad, Jaipur, Lucknow)
+- **Pain Points:** Manual booking logs, cash-only payments, no inventory visibility, high no-show rates
+- **Goal:** Reduce admin overhead, accept digital payments, grow customer base online
+
+### Persona 2: Staff / Manager
+- **Who:** Employee managing day-to-day operations
+- **Need:** Simple dashboard with clear task queues and booking status views
+
+### Persona 3: Customer (End Renter)
+- **Who:** Individual or contractor needing equipment short-term
+- **Behavior:** Mobile-first, searches on Google, prefers UPI payment
+- **Need:** Easy tool discovery, transparent pricing, instant booking confirmation, chat with owner
+
+### Persona 4: Platform Super Admin (ToolRent Team)
+- **Who:** ToolRent internal team managing the platform
+- **Need:** Global admin panel with cross-tenant visibility, tenant approval, plan management
+
+### Key Use Cases
+1. Rental business registers and onboards; configures branding, tools, and pricing
+2. Customer visits tenant's storefront, browses tools with availability calendar
+3. Customer books a tool, pays deposit + rental fee via Razorpay UPI
+4. Tenant admin receives booking notification, confirms or modifies booking
+5. Customer and owner communicate via in-app chat for pickup/delivery coordination
+6. Tool is returned; security deposit is released or partially withheld
+7. Customer leaves a star rating and review; tenant can respond
+8. Tenant views revenue reports, inventory utilization, and analytics on dashboard
+
+---
+
+# 3. MVP Feature List
+
+| Feature | Priority | Complexity | Week |
+|---|---|---|---|
+| Tenant Registration & Onboarding | P0 — Must Have | Medium | 1-2 |
+| JWT Authentication & Role Management | P0 — Must Have | Medium | 1-2 |
+| Tool Inventory Management (CRUD) | P0 — Must Have | Low | 2-3 |
+| Tool Listings & Customer Browsing | P0 — Must Have | Medium | 3-4 |
+| Booking & Rental Management | P0 — Must Have | High | 4-5 |
+| Razorpay Payment Integration | P0 — Must Have | High | 5-6 |
+| Security Deposit Handling | P0 — Must Have | High | 5-6 |
+| Tenant Admin Dashboard | P0 — Must Have | Medium | 6-7 |
+| Real-Time Chat (WebSockets) | P1 — Should Have | High | 7-8 |
+| Ratings & Reviews | P1 — Should Have | Low | 8 |
+| Email / SMS Notifications | P1 — Should Have | Low | 6-7 |
+| File Uploads (S3 / Cloudinary) | P0 — Must Have | Low | 3 |
+| Super Admin Panel | P1 — Should Have | Medium | 9 |
+| Customer Booking History | P0 — Must Have | Low | 5 |
+| Availability Calendar | P1 — Should Have | Medium | 4-5 |
+
+---
+
+# 4. Detailed System Architecture
+
+ToolRent follows a layered, modular architecture with clear separation between presentation, API, business logic, and data layers. The system uses a shared database with tenant_id isolation strategy for MVP.
+
+```
+[ Browser / Mobile App ]
+       | HTTPS
+[ React SPA + PWA ] <-- Nginx / CDN (Cloudflare)
+       | REST API / WebSocket
+[ Spring Boot API Gateway / BFF ]
+       |
+[ Modular Spring Boot Services ]
+  - Auth Service       - Tenant Service
+  - Inventory Service  - Booking Service
+  - Payment Service    - Chat Service
+  - Review Service     - Notification Service
+       |
+[ PostgreSQL (Multi-Tenant, Shared DB) ]
+       |
+[ AWS S3 / Cloudinary ]  [ Razorpay ]  [ Redis Cache ]
+```
+
+### Architecture Decisions
+
+| Decision | Choice | Rationale |
+|---|---|---|
+| Multi-tenancy Model | Shared DB + tenant_id | Faster MVP, lower cost; migrate to schema isolation at scale |
+| API Style | RESTful + WebSocket | REST for CRUD; WebSocket for real-time chat |
+| Auth Strategy | JWT + Refresh Tokens | Stateless, scalable; short-lived access tokens |
+| File Storage | Cloudinary + S3 | Cloudinary for image optimization; S3 for bulk storage |
+| Cache Layer | Redis | Session caching, availability checks, rate limiting |
+| Frontend | React SPA (PWA) | Mobile-first PWA for offline support and app-like UX |
+| Payments | Razorpay | India-first, strong UPI/QR support, webhook-ready |
+
+---
+
+# 5. Database Schema Design
+
+All tables include `tenant_id` (UUID) as a foreign key to enforce tenant isolation at the data layer.
+
+### tenants
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PRIMARY KEY |
+| business_name | VARCHAR(200) | NOT NULL |
+| subdomain | VARCHAR(100) | UNIQUE, NOT NULL |
+| owner_email | VARCHAR(200) | UNIQUE, NOT NULL |
+| phone | VARCHAR(20) | NOT NULL |
+| plan | ENUM(free, starter, pro, enterprise) | DEFAULT 'free' |
+| logo_url | TEXT | NULLABLE |
+| is_active | BOOLEAN | DEFAULT true |
+| settings | JSONB | Business config |
+
+### users
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PRIMARY KEY |
+| tenant_id | UUID | FK -> tenants(id), NULLABLE |
+| email | VARCHAR(200) | UNIQUE NOT NULL |
+| password_hash | TEXT | NOT NULL |
+| full_name | VARCHAR(200) | NOT NULL |
+| role | ENUM(super_admin, tenant_admin, tenant_staff, customer) | NOT NULL |
+| is_verified | BOOLEAN | DEFAULT false |
+
+### tools
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PRIMARY KEY |
+| tenant_id | UUID | FK -> tenants(id), NOT NULL |
+| name | VARCHAR(300) | NOT NULL |
+| category_id | UUID | FK -> categories(id) |
+| daily_rate | DECIMAL(10,2) | NOT NULL |
+| weekly_rate | DECIMAL(10,2) | NULLABLE |
+| deposit_amount | DECIMAL(10,2) | NOT NULL |
+| quantity_total | INT | NOT NULL DEFAULT 1 |
+| quantity_available | INT | NOT NULL |
+| condition | ENUM(new, good, fair, poor) | DEFAULT 'good' |
+| images | TEXT[] | Array of image URLs |
+| is_active | BOOLEAN | DEFAULT true |
+
+### bookings
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PRIMARY KEY |
+| tenant_id | UUID | FK -> tenants(id) |
+| tool_id | UUID | FK -> tools(id) |
+| customer_id | UUID | FK -> users(id) |
+| start_date | DATE | NOT NULL |
+| end_date | DATE | NOT NULL |
+| rental_amount | DECIMAL(10,2) | NOT NULL |
+| deposit_amount | DECIMAL(10,2) | NOT NULL |
+| status | ENUM(pending, confirmed, active, completed, cancelled) | DEFAULT 'pending' |
+
+### payments
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PRIMARY KEY |
+| tenant_id | UUID | FK -> tenants(id) |
+| booking_id | UUID | FK -> bookings(id) |
+| razorpay_order_id | VARCHAR(100) | UNIQUE |
+| razorpay_payment_id | VARCHAR(100) | NULLABLE |
+| amount | DECIMAL(10,2) | NOT NULL |
+| type | ENUM(rental, deposit, refund, partial_refund) | NOT NULL |
+| status | ENUM(created, paid, failed, refunded) | DEFAULT 'created' |
+| payment_method | VARCHAR(50) | upi, card, netbanking |
+
+### Additional Tables
+| Table | Purpose |
+|---|---|
+| categories | Tool categories per tenant |
+| chat_conversations | Chat thread between customer and tenant |
+| chat_messages | Individual messages with read receipts |
+| reviews | Star ratings and text reviews per booking |
+| notifications | In-app notification log |
+| refresh_tokens | JWT refresh token store (hashed) |
+| audit_logs | Full action audit trail |
+
+---
+
+# 6. Backend Module Structure (Spring Boot)
+
+```
+toolrent-backend/src/main/java/com/toolrent/
+  |-- TenantRentApplication.java
+  |-- config/
+  |   |-- SecurityConfig.java
+  |   |-- WebSocketConfig.java
+  |   |-- TenantContext.java
+  |   |-- RazorpayConfig.java
+  |   |-- CorsConfig.java
+  |-- common/
+  |   |-- TenantFilter.java
+  |   |-- BaseEntity.java
+  |   |-- ApiResponse.java
+  |   |-- GlobalExceptionHandler.java
+  |-- modules/
+  |   |-- auth/
+  |   |-- tenant/
+  |   |-- user/
+  |   |-- tool/
+  |   |-- category/
+  |   |-- booking/
+  |   |-- payment/
+  |   |-- deposit/
+  |   |-- chat/
+  |   |-- review/
+  |   |-- notification/
+  |   |-- upload/
+  |   |-- admin/
+  |   |-- report/
+  |-- security/
+      |-- JwtService.java
+      |-- JwtAuthFilter.java
+      |-- CustomUserDetails.java
+```
+
+### Module Responsibilities
+| Module | Responsibility |
+|---|---|
+| auth | Register, login, refresh token, email verification |
+| tenant | Onboarding flow, subdomain management, settings |
+| tool | CRUD, image upload, availability check |
+| booking | Create/confirm/cancel bookings, date conflict checks |
+| payment | Razorpay order creation, payment verification, refunds |
+| chat | STOMP broker, message persistence, read receipts |
+| review | Submit/fetch reviews, aggregate ratings |
+| notification | Booking alerts, payment receipts, SMS/email |
+| upload | Multipart upload, Cloudinary/S3, URL generation |
+| admin | Platform-wide tenant/user management |
+
+---
+
+# 7. Frontend Component Structure (React)
+
+### Tech Stack
+- React 18 + Vite
+- React Router v6
+- Zustand (state management)
+- TanStack Query (server state)
+- Tailwind CSS + shadcn/ui
+- STOMP.js (WebSocket)
+- Razorpay checkout.js
+- React Hook Form + Zod
+
+### Project Structure
+```
+toolrent-frontend/src/
+  |-- api/
+  |   |-- axiosClient.js        # JWT interceptors
+  |   |-- auth.api.js
+  |   |-- tools.api.js
+  |   |-- bookings.api.js
+  |   |-- payments.api.js
+  |-- store/
+  |   |-- authStore.js
+  |   |-- chatStore.js
+  |-- pages/
+  |   |-- public/
+  |   |   |-- HomePage.jsx
+  |   |   |-- StorePage.jsx
+  |   |   |-- ToolDetailPage.jsx
+  |   |   |-- LoginPage.jsx
+  |   |-- customer/
+  |   |   |-- BookingPage.jsx
+  |   |   |-- CheckoutPage.jsx
+  |   |   |-- MyBookingsPage.jsx
+  |   |   |-- ChatPage.jsx
+  |   |-- tenant-admin/
+  |   |   |-- DashboardPage.jsx
+  |   |   |-- ToolsPage.jsx
+  |   |   |-- BookingsPage.jsx
+  |   |   |-- PaymentsPage.jsx
+  |   |   |-- ReportsPage.jsx
+  |   |   |-- SettingsPage.jsx
+  |   |-- super-admin/
+  |       |-- TenantsPage.jsx
+  |       |-- GlobalStatsPage.jsx
+  |-- components/
+      |-- layout/        # Header, Sidebar, Footer
+      |-- tools/         # ToolCard, ToolGrid, AvailabilityCalendar
+      |-- bookings/      # BookingForm, BookingStatusBadge
+      |-- payments/      # RazorpayButton, PaymentStatus
+      |-- chat/          # ChatWindow, MessageBubble
+      |-- common/        # LoadingSpinner, EmptyState, ErrorBoundary
+```
+
+---
+
+# 8. API Endpoint Design
+
+Base prefix: `/api/v1` | Format: `{ success, data, message, errors }`
+
+### Authentication
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | /auth/register/tenant | Public | Register new tenant |
+| POST | /auth/register/customer | Public | Customer self-registration |
+| POST | /auth/login | Public | Login, returns JWT pair |
+| POST | /auth/refresh | Public | Refresh access token |
+| POST | /auth/logout | JWT | Invalidate refresh token |
+| GET | /auth/verify-email | Public | Email verification |
+| POST | /auth/forgot-password | Public | Send reset email |
+
+### Tools
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | /tools | Public | List tools with filters |
+| GET | /tools/:id | Public | Tool detail + availability |
+| POST | /tools | Tenant Admin | Create tool |
+| PUT | /tools/:id | Tenant Admin | Update tool |
+| DELETE | /tools/:id | Tenant Admin | Soft delete tool |
+| POST | /tools/:id/images | Tenant Admin | Upload images |
+| GET | /tools/:id/availability | Public | Check date range availability |
+
+### Bookings
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | /bookings | JWT | List bookings (role-filtered) |
+| POST | /bookings | Customer | Create booking request |
+| GET | /bookings/:id | JWT | Booking detail |
+| PUT | /bookings/:id/confirm | Tenant Admin | Confirm booking |
+| PUT | /bookings/:id/cancel | JWT | Cancel booking |
+| PUT | /bookings/:id/complete | Tenant Admin | Mark as returned |
+
+### Payments
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | /payments/create-order | Customer | Create Razorpay order |
+| POST | /payments/verify | Customer | Verify payment signature |
+| POST | /payments/webhook | Razorpay HMAC | Handle webhooks |
+| POST | /payments/:id/refund | Tenant Admin | Initiate refund |
+
+### Other Endpoint Groups
+| Group | Endpoints |
+|---|---|
+| Chat | /chat/conversations, /chat/messages, WS: /ws/chat |
+| Reviews | /reviews, /reviews/:id |
+| Categories | /categories (CRUD) |
+| Uploads | /uploads/image, /uploads/document |
+| Admin | /admin/tenants, /admin/users |
+| Reports | /reports/revenue, /reports/bookings |
+| Notifications | /notifications, /notifications/:id/read |
+
+---
+
+# 9. Multi-Tenant Architecture Strategy
+
+### Tenancy Model Comparison
+| Model | Isolation | Complexity | Cost | When to Use |
+|---|---|---|---|---|
+| Shared DB + tenant_id (MVP) | Row-level | Low | Low | 0–500 tenants |
+| Schema-per-Tenant | Schema-level | Medium | Medium | 500–5,000 tenants |
+| DB-per-Tenant | Full | High | High | 5,000+ tenants |
+
+### Tenant Isolation Mechanisms
+
+**A. Tenant Resolution**
+- JWT Token: tenant_id embedded in JWT claims (primary method)
+- Subdomain: `{tenant}.toolrent.in` parsed at Nginx level
+- TenantContext (ThreadLocal): Spring filter stores tenant_id per request
+
+**B. Data Isolation**
+- All JPA queries include tenantId parameter
+- Hibernate @Filter as secondary safety net
+- PostgreSQL Row Level Security (RLS) as database-level backstop
+
+**C. Subdomain Routing**
+- Wildcard DNS: `*.toolrent.in` → Nginx
+- Nginx extracts subdomain, passes as `X-Tenant-Subdomain` header
+- API resolves tenant_id from subdomain via Redis-cached lookup
+
+---
+
+# 10. Security Considerations
+
+### Authentication & Authorization
+- JWT Access Tokens: 15-minute expiry, RS256 signed
+- Refresh Tokens: 30-day expiry, stored hashed in DB, rotated on each use
+- RBAC: super_admin > tenant_admin > tenant_staff > customer
+- Tenant boundary check on every service method
+
+### Threat Mitigation
+| Threat | Mitigation |
+|---|---|
+| Cross-Tenant Data Leakage | tenant_id on every query + RLS + integration tests |
+| SQL Injection | JPA parameterized queries; no raw SQL |
+| IDOR | Resource ownership check before every operation |
+| Brute Force Login | Rate limiting: 5 attempts / 15 min via Redis |
+| Webhook Tampering | HMAC-SHA256 signature verification (Razorpay) |
+| XSS | React output escaping + CSP headers via Nginx |
+| Data in Transit | TLS 1.3 enforced + HSTS |
+| Passwords | BCrypt cost factor 12; card data never stored |
+| File Upload Abuse | MIME validation, 10MB limit, Cloudinary scanning |
+
+### Additional Measures
+- Jakarta Bean Validation on all DTOs
+- Audit log for all write operations
+- Secrets via AWS Secrets Manager (never in code)
+- OWASP dependency scanning in CI pipeline
+- Customer data deletion API (GDPR-lite compliance)
+
+---
+
+# 11. DevOps & Deployment Strategy
+
+### Infrastructure Stack
+| Component | Technology | Notes |
+|---|---|---|
+| Cloud Provider | AWS (ap-south-1 Mumbai) | Primary India region |
+| Compute | EC2 t3.medium → ECS Fargate | Upgrade post-MVP |
+| Database | RDS PostgreSQL 15 Multi-AZ | Automated backups |
+| Cache | ElastiCache Redis | Sessions, rate limiting |
+| File Storage | Cloudinary + S3 | Images + documents |
+| CDN | Cloudflare | Static assets, DDoS, SSL |
+| DNS | Cloudflare | Wildcard: *.toolrent.in |
+| CI/CD | GitHub Actions | Build, test, deploy |
+| Monitoring | CloudWatch + Grafana | Metrics, logs, alerts |
+| Error Tracking | Sentry | Application errors |
+
+### CI/CD Pipeline
+```
+1. CODE PUSH (feature branch)
+   |-- Lint (Checkstyle + ESLint)
+   |-- Unit Tests (JUnit 5 + Jest)
+   |-- Integration Tests (TestContainers)
+
+2. PR MERGE to main
+   |-- Full test suite
+   |-- OWASP dependency scan
+   |-- Docker image build → push to ECR
+
+3. DEPLOY to STAGING (auto)
+   |-- ECS task update + smoke tests
+   |-- Slack notification
+
+4. DEPLOY to PRODUCTION (manual approval)
+   |-- Blue/Green via ALB
+   |-- Flyway DB migration
+   |-- Rollback if health check fails
+```
+
+### Environments
+| Environment | Purpose | Infrastructure |
+|---|---|---|
+| Development | Local dev | Docker Compose |
+| Staging | Pre-release testing | Single EC2, separate RDS |
+| Production | Live traffic | ALB + 2x EC2, RDS Multi-AZ |
+
+---
+
+# 12–13. Development Roadmap & Weekly Milestones
+
+### Week 1 — Foundation & Setup
+- Repository setup (monorepo: backend + frontend)
+- Docker Compose environment (Postgres, Redis)
+- Spring Boot project scaffold with all modules
+- React + Vite + Tailwind + Router setup
+- Flyway migrations: tenants, users tables
+- JWT auth: register, login, refresh endpoints
+- Email verification flow
+
+### Week 2 — Tenant Onboarding
+- Tenant registration API + multi-step onboarding form
+- Subdomain resolution middleware (Spring filter)
+- TenantContext (ThreadLocal) implementation
+- Tenant settings API (branding, hours, policies)
+- Role management setup
+- Public tenant storefront page skeleton
+
+### Week 3 — Tool Inventory
+- Tool CRUD API (create, update, soft-delete)
+- Category management API
+- Cloudinary image upload integration
+- Tool availability engine (date conflict check)
+- Admin: Tools management UI with image upload
+- Public: Tool listing page with filters and search
+
+### Week 4 — Booking System
+- Booking creation API with availability validation
+- Booking status machine (pending → confirmed → active → completed)
+- Availability calendar component (React)
+- Booking form + date range picker (customer side)
+- Tenant admin: Bookings management page
+- Booking conflict prevention (concurrent requests)
+
+### Week 5 — Payments (Razorpay)
+- Razorpay SDK integration (order creation)
+- Frontend checkout modal
+- Payment verification (HMAC signature)
+- Webhook handler (payment.captured, etc.)
+- Security deposit payment flow
+- Refund API integration
+- Payment history page
+
+### Week 6 — Notifications & Polish
+- Email notifications: booking confirmation, payment receipt
+- SMS integration (Twilio/MSG91)
+- In-app notification system
+- Notification bell component
+- Booking cancellation + partial refund logic
+- Error boundary components + API error handling
+
+### Week 7 — Admin Dashboard
+- KPI cards (revenue, bookings, tools)
+- Revenue report (daily/weekly/monthly chart)
+- Top tools by utilization
+- Customer management page
+- Deposit management UI
+- Settings page (profile, branding, notifications)
+
+### Week 8 — Chat & Reviews
+- WebSocket server (Spring STOMP broker)
+- Chat conversation + message API
+- React chat UI (ChatWindow, MessageBubble, typing indicator)
+- Review submission API (post-completion only)
+- Star rating component + review list
+- Aggregate ratings on tool cards
+- Super admin panel: tenant list, plan assignment
+
+### Week 9 — QA & Security
+- Integration test suite (TestContainers)
+- Frontend E2E tests (Playwright)
+- Cross-tenant isolation penetration tests
+- Load test: 100 concurrent users (k6)
+- OWASP Top 10 review
+- Mobile responsive QA on Android Chrome
+
+### Week 10 — Deployment & Launch
+- Production infrastructure provisioning (AWS)
+- CI/CD pipeline finalization
+- SSL + Cloudflare wildcard domain setup
+- Production smoke tests + monitoring
+- Sentry + CloudWatch dashboards live
+- Beta onboarding: 3–5 real rental businesses
+- API documentation (SpringDoc/OpenAPI)
+
+---
+
+# 14. Risk Analysis & Mitigation
+
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| Razorpay downtime | Low | High | Idempotent order IDs, webhook retry queue |
+| Cross-tenant data leak | Low | Critical | RLS, integration tests, code review checklist |
+| Scope creep | High | High | Strict P0/P1 triage, weekly sprint reviews |
+| Low tenant adoption | Medium | High | Free tier, pilot program, onboarding concierge |
+| DB performance degradation | Medium | Medium | Index optimization, Redis caching, query profiling |
+| WebSocket scalability | Low | Medium | Redis pub/sub for multi-instance WebSocket |
+| Poor mobile connectivity | High | Medium | PWA offline support, aggressive retry logic |
+| Razorpay KYC compliance | Medium | High | Start compliance in Week 1, use Sandbox until approved |
+| Developer availability | Medium | High | Buffer in Weeks 9–10; modular parallel development |
+
+---
+
+# 15. Future Scalability Roadmap
+
+### Post-MVP (Months 3–6)
+- Migrate EC2 → ECS Fargate for auto-scaling
+- Schema-per-tenant for high-volume tenants
+- Elasticsearch for full-text tool search
+- React Native mobile apps (iOS + Android)
+- WhatsApp Business API notifications
+
+### Scale Phase (Months 6–12)
+- Multi-region AWS deployment (Mumbai + Hyderabad)
+- Kafka for event-driven booking/payment events
+- Microservices extraction (Payment, Notification services)
+- AWS Redshift analytics data warehouse
+- Tenant webhook publishing API
+- GPS tracking for delivery/pickup fleet
+
+### Growth Phase (Year 2+)
+- Marketplace: search tools across all tenants
+- B2B rental: bulk bookings, purchase orders, invoicing
+- Rental insurance integration per booking
+- Franchise management (parent + branch tenants)
+- AI-powered demand forecasting and pricing
+
+---
+
+# 16. Monetization Strategy
+
+### Pricing Tiers
+
+| Plan | Price | Features | Target |
+|---|---|---|---|
+| Free | ₹0/month | 10 tools, 50 bookings/mo, basic dashboard | Small shops, trials |
+| Starter | ₹999/month | 50 tools, 300 bookings/mo, custom branding, reports | Single-location shops |
+| Pro | ₹2,499/month | Unlimited tools + bookings, chat, reviews, SMS, full reports | Growing businesses |
+| Enterprise | Custom | White-label, multi-branch, API access, SLA, dedicated support | Multi-location operators |
+
+### Revenue Streams
+- **Subscriptions:** Monthly/annual plans (20% discount for annual)
+- **Transaction Fee:** 0.5–1% per booking above Free tier threshold
+- **Premium Add-ons:** Extra storage, staff seats, custom domain
+- **Onboarding Services:** Assisted setup, data migration (₹5,000–₹15,000)
+- **Marketplace Listing (future):** Featured placement fees
+
+### MRR Projections
+| Milestone | Tenants | Avg. Revenue | MRR (Est.) |
+|---|---|---|---|
+| Month 3 | 25 | ₹800 | ₹20,000 |
+| Month 6 | 100 | ₹1,200 | ₹1,20,000 |
+| Month 12 | 300 | ₹1,500 | ₹4,50,000 |
+| Month 18 | 700 | ₹1,800 | ₹12,60,000 |
+
+---
+
+**KEY INSIGHT:** India's equipment rental market is estimated at ₹15,000+ Crore and growing at 15–18% annually. Even capturing 0.5% of SME rental businesses digitally represents a substantial addressable market.
+
+---
+
+*Confidential | Version 1.0 | For Internal Use Only*
+
+---
+
+That's the complete plan in plain text, chachu! Everything is here — all 16 sections, all tables, all code structures. You can copy any part of it directly. Let me know if you want me to expand or modify any specific section! 🚀

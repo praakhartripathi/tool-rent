@@ -1,0 +1,541 @@
+I reviewed your full document and extracted only the **true MVP-critical parts** from it. 
+The goal here is **build something usable in 3 weeks**, not the full 10-week system.
+
+So the idea is:
+
+**Week 1 → Core platform foundation**
+**Week 2 → Tool inventory + booking system**
+**Week 3 → Payments + dashboard + deploy**
+
+Everything else (chat, reviews, analytics, etc.) can come later.
+
+---
+
+# 3-Week MVP Development Plan for ToolRent SaaS
+
+Goal of MVP:
+
+```
+Rental business signs up
+→ Adds tools
+→ Customer browses tools
+→ Customer books tool
+→ Customer pays deposit + rent
+→ Admin manages booking
+```
+
+That is enough to validate the product.
+
+---
+
+# WEEK 1 — Foundation & Multi-Tenant Setup
+
+Goal: **Platform basics working**
+
+Deliverable:
+Tenant can **register and login** and see their **dashboard**.
+
+---
+
+## Day 1 — Project Setup
+
+Backend
+
+```
+Spring Boot project
+Modules:
+auth
+tenant
+tool
+booking
+payment
+```
+
+Setup:
+
+```
+PostgreSQL
+Redis
+Flyway migrations
+```
+
+Frontend
+
+```
+React + Vite
+Tailwind
+React Router
+Axios
+```
+
+---
+
+## Day 2 — Multi-Tenant Architecture
+
+Implement tenant resolution.
+
+Add:
+
+```
+TenantContext
+TenantFilter
+```
+
+Tenant identification:
+
+```
+subdomain
+```
+
+Example:
+
+```
+abc.toolrent.in
+```
+
+Database table:
+
+```
+tenants
+```
+
+Fields:
+
+```
+id
+business_name
+subdomain
+owner_email
+plan
+```
+
+---
+
+## Day 3 — Authentication
+
+Backend APIs:
+
+```
+POST /auth/register-tenant
+POST /auth/login
+POST /auth/refresh
+```
+
+Features:
+
+```
+JWT auth
+password hashing
+role system
+```
+
+Roles:
+
+```
+tenant_admin
+customer
+```
+
+Frontend pages:
+
+```
+RegisterPage
+LoginPage
+```
+
+---
+
+## Day 4 — Tenant Onboarding
+
+Tenant onboarding flow:
+
+```
+Create tenant
+Create admin user
+Create storefront
+```
+
+Add page:
+
+```
+TenantDashboard
+```
+
+Dashboard shows:
+
+```
+Total tools
+Total bookings
+Total revenue
+```
+
+---
+
+## Day 5 — Storefront Skeleton
+
+Public page:
+
+```
+/store/:subdomain
+```
+
+Example:
+
+```
+abc.toolrent.in
+```
+
+Page shows:
+
+```
+business name
+tool listings
+```
+
+---
+
+# WEEK 2 — Tools + Booking System
+
+Goal: **Rental flow works**
+
+Deliverable:
+
+```
+Customer can book a tool
+```
+
+---
+
+## Day 6 — Tool Inventory API
+
+Backend:
+
+```
+POST /tools
+GET /tools
+PUT /tools/:id
+DELETE /tools/:id
+```
+
+Tool fields:
+
+```
+name
+price
+deposit
+quantity
+images
+```
+
+Frontend:
+
+```
+ToolsPage
+AddToolPage
+```
+
+---
+
+## Day 7 — Tool Listing Page
+
+Public page:
+
+```
+ToolGrid
+ToolCard
+ToolDetail
+```
+
+Features:
+
+```
+image
+price
+availability
+description
+```
+
+---
+
+## Day 8 — Booking System
+
+Database table:
+
+```
+bookings
+```
+
+Fields:
+
+```
+tool_id
+customer_id
+start_date
+end_date
+status
+```
+
+API:
+
+```
+POST /bookings
+GET /bookings
+PUT /bookings/:id/confirm
+```
+
+---
+
+## Day 9 — Availability Engine
+
+Prevent double bookings.
+
+Logic:
+
+```
+SELECT * FROM bookings
+WHERE tool_id = ?
+AND date overlaps
+```
+
+Frontend:
+
+```
+date range picker
+```
+
+---
+
+## Day 10 — Booking Dashboard
+
+Tenant admin page:
+
+```
+BookingsPage
+```
+
+Shows:
+
+```
+Pending bookings
+Confirmed bookings
+Completed bookings
+```
+
+Admin actions:
+
+```
+confirm
+cancel
+complete
+```
+
+---
+
+# WEEK 3 — Payments + Deploy
+
+Goal: **Real rental transaction works**
+
+Deliverable:
+
+```
+Customer books and pays online
+```
+
+---
+
+## Day 11 — Razorpay Integration
+
+Backend:
+
+```
+POST /payments/create-order
+POST /payments/verify
+```
+
+Flow:
+
+```
+Create Razorpay order
+User pays
+Verify payment
+```
+
+---
+
+## Day 12 — Security Deposit
+
+Payment breakdown:
+
+```
+Rental price
++
+Deposit
+```
+
+Example:
+
+```
+₹500 rent
+₹2000 deposit
+```
+
+Store in:
+
+```
+payments table
+```
+
+---
+
+## Day 13 — Payment Webhooks
+
+Handle:
+
+```
+payment.captured
+payment.failed
+refund.created
+```
+
+Update booking status.
+
+---
+
+## Day 14 — Customer Pages
+
+Customer pages:
+
+```
+MyBookingsPage
+CheckoutPage
+```
+
+Customer flow:
+
+```
+browse tool
+select dates
+book
+pay
+```
+
+---
+
+## Day 15 — Deploy MVP
+
+Deploy:
+
+```
+AWS EC2
+PostgreSQL RDS
+Cloudflare
+```
+
+Setup:
+
+```
+Nginx
+SSL
+Docker
+```
+
+Domain:
+
+```
+toolrent.in
+```
+
+Wildcard:
+
+```
+*.toolrent.in
+```
+
+---
+
+# Final MVP Features (After 3 Weeks)
+
+You will have:
+
+### Tenant Features
+
+```
+register business
+add tools
+manage bookings
+view dashboard
+```
+
+### Customer Features
+
+```
+browse tools
+book tools
+pay online
+view bookings
+```
+
+### Platform Features
+
+```
+multi-tenant SaaS
+JWT authentication
+Razorpay payments
+inventory system
+booking system
+```
+
+---
+
+# Features NOT Needed for MVP
+
+From your full document, skip these for now:
+
+```
+chat
+reviews
+SMS notifications
+analytics
+super admin panel
+reports
+maintenance logs
+AI features
+```
+
+Build them **after validation**.
+
+---
+
+# Expected MVP Size
+
+Approximate code:
+
+Backend
+
+```
+15–20 APIs
+8 tables
+5 modules
+```
+
+Frontend
+
+```
+10 pages
+20 components
+```
+
+Total build time:
+
+```
+~70–90 hours
+```
+
+Very realistic in **3 weeks**.
+
+---
+
+✅ If you want, I can also show you something extremely useful:
+
+**The exact GitHub project structure for this MVP (Spring Boot + React)**
+so your repo looks **like a real startup codebase.**
