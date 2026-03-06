@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-gray-950 text-gray-100 min-h-screen;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-900;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-700 rounded-full;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-brand-500/30 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-800 hover:bg-gray-700 text-gray-100 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 border border-gray-700;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-gray-900 border border-gray-800 rounded-2xl shadow-xl;
+  }
+
+  .input {
+    @apply w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-300 mb-1.5;
+  }
+
+  .stat-card {
+    @apply card p-6 flex flex-col gap-1;
+  }
+
+  .badge-pending {
+    @apply bg-yellow-500/20 text-yellow-400 text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+
+  .badge-confirmed {
+    @apply bg-green-500/20 text-green-400 text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+
+  .badge-completed {
+    @apply bg-brand-500/20 text-brand-400 text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+
+  .badge-cancelled {
+    @apply bg-red-500/20 text-red-400 text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+
+  .tool-card {
+    @apply card overflow-hidden hover:border-brand-500/50 transition-all duration-300 hover:shadow-brand-900/40 hover:shadow-2xl hover:-translate-y-1 cursor-pointer animate-fade-in;
+  }
+}
