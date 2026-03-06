@@ -1,19 +1,21 @@
 # ── Stage 1: Build ──────────────────────────────────────────────────────────
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:17-jdk-jammy AS builder
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy Maven wrapper and pom first (layer cache)
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -q
+# Copy pom first (layer cache for dependencies)
+COPY pom.xml ./
+RUN mvn dependency:go-offline -q
 
 # Copy source and build
 COPY src ./src
-RUN ./mvnw package -DskipTests -q
+RUN mvn package -DskipTests -q
 
 # ── Stage 2: Runtime ─────────────────────────────────────────────────────────
-FROM eclipse-temurin:17-jre-alpine AS runtime
+FROM eclipse-temurin:17-jre-jammy AS runtime
 
 LABEL maintainer="ToolRent <hello@toolrent.in>"
 LABEL description="ToolRent SaaS Backend — Spring Boot 3.x"
@@ -21,7 +23,7 @@ LABEL description="ToolRent SaaS Backend — Spring Boot 3.x"
 WORKDIR /app
 
 # Non-root user for security
-RUN addgroup -S toolrent && adduser -S toolrent -G toolrent
+RUN groupadd -r toolrent && useradd -r -g toolrent toolrent
 USER toolrent
 
 # Copy JAR from builder

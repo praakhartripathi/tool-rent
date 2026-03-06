@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Layer cache: install deps first
 COPY package*.json ./
-RUN npm ci --silent
+RUN if [ -f package-lock.json ]; then npm ci --silent; else npm install --silent; fi
 
 # Copy source and build
 COPY . .

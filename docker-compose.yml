@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   # ── PostgreSQL ──────────────────────────────────────────────────────────────
@@ -26,13 +24,13 @@ services:
     image: redis:7-alpine
     container_name: toolrent-redis
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:-}
+    command: redis-server --requirepass ${REDIS_PASSWORD:-toolrent}
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-toolrent}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -55,12 +53,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-toolrent}
       SPRING_DATA_REDIS_HOST:     redis
       SPRING_DATA_REDIS_PORT:     6379
-      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-toolrent}
       APP_JWT_SECRET:             ${JWT_SECRET:-toolrent-super-secret-key-32-minimum-chars}
       APP_JWT_EXPIRATION_MS:      ${JWT_EXPIRATION_MS:-3600000}
       APP_JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS:-604800000}
-      APP_RAZORPAY_KEY_ID:        ${RAZORPAY_KEY_ID}
-      APP_RAZORPAY_KEY_SECRET:    ${RAZORPAY_KEY_SECRET}
+      APP_RAZORPAY_KEY_ID:        ${RAZORPAY_KEY_ID:-}
+      APP_RAZORPAY_KEY_SECRET:    ${RAZORPAY_KEY_SECRET:-}
       APP_CORS_ALLOWED_ORIGINS:   ${CORS_ALLOWED_ORIGINS:-http://localhost:80,http://localhost:5173}
     ports:
       - "8080:8080"
