@@ -11,10 +11,10 @@ public class AuthResponse {
     private String accessToken;
     private String refreshToken;
     private String tokenType;
-    private UUID userId;
+    private UUID   userId;
     private String email;
     private String role;
-    private UUID tenantId;
+    private UUID   tenantId;
     private String subdomain;
     private String businessName;
 }
