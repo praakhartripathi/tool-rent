@@ -36,9 +36,9 @@ export default function CheckoutPage() {
             handler: async (response) => {
                 try {
                     await verifyPayment({
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature,
+                        razorpayOrderId: response.razorpay_order_id,
+                        razorpayPaymentId: response.razorpay_payment_id,
+                        razorpaySignature: response.razorpay_signature,
                     })
                     toast.success('Payment successful! Booking confirmed 🎉')
                     navigate('/my-bookings')

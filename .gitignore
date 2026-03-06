@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Backend build artifacts
+toolrent-backend/target/
+*.log
+
+# Frontend build artifacts and dependencies
+toolrent-frontend/node_modules/
+toolrent-frontend/dist/
+
+# Env files
+.env

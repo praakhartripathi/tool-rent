@@ -9,7 +9,16 @@ export default function AddToolPage() {
     const isEdit = !!id
     const navigate = useNavigate()
     const [form, setForm] = useState({
-        name: '', description: '', pricePerDay: '', depositAmount: '', quantity: 1, category: ''
+        name: '',
+        description: '',
+        pricePerDay: '',
+        depositAmount: '',
+        quantity: 1,
+        category: '',
+        sku: '',
+        barcode: '',
+        replacementCost: '',
+        purchaseDate: '',
     })
     const [loading, setLoading] = useState(false)
 
@@ -17,7 +26,18 @@ export default function AddToolPage() {
         if (isEdit) {
             getToolById(id).then(r => {
                 const t = r.data
-                setForm({ name: t.name, description: t.description || '', pricePerDay: t.pricePerDay, depositAmount: t.depositAmount, quantity: t.quantity, category: t.category || '' })
+                setForm({
+                    name: t.name,
+                    description: t.description || '',
+                    pricePerDay: t.pricePerDay,
+                    depositAmount: t.depositAmount,
+                    quantity: t.quantity,
+                    category: t.category || '',
+                    sku: t.sku || '',
+                    barcode: t.barcode || '',
+                    replacementCost: t.replacementCost || '',
+                    purchaseDate: t.purchaseDate || '',
+                })
             })
         }
     }, [id])
@@ -69,6 +89,18 @@ export default function AddToolPage() {
                             <input name="category" className="input" placeholder="e.g. Concrete & Masonry"
                                 value={form.category} onChange={handleChange} />
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="label">SKU</label>
+                                <input name="sku" className="input" placeholder="MIX-1HP-001"
+                                    value={form.sku} onChange={handleChange} />
+                            </div>
+                            <div>
+                                <label className="label">Barcode</label>
+                                <input name="barcode" className="input" placeholder="123456789012"
+                                    value={form.barcode} onChange={handleChange} />
+                            </div>
+                        </div>
                         <div>
                             <label className="label">Description</label>
                             <textarea name="description" className="input min-h-[90px] resize-none" placeholder="Describe the tool, condition, features..."
@@ -90,6 +122,18 @@ export default function AddToolPage() {
                             <label className="label">Quantity Available</label>
                             <input name="quantity" type="number" min="1" className="input w-32"
                                 value={form.quantity} onChange={handleChange} required />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="label">Replacement Cost (₹)</label>
+                                <input name="replacementCost" type="number" min="0" step="0.01" className="input"
+                                    placeholder="25000" value={form.replacementCost} onChange={handleChange} />
+                            </div>
+                            <div>
+                                <label className="label">Purchase Date</label>
+                                <input name="purchaseDate" type="date" className="input"
+                                    value={form.purchaseDate} onChange={handleChange} />
+                            </div>
                         </div>
                         <div className="flex gap-3 pt-2">
                             <button type="submit" className="btn-primary flex-1" disabled={loading}>

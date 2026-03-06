@@ -78,8 +78,8 @@ export default function BookingsPage() {
                             <tbody>
                                 {filtered.map(b => (
                                     <tr key={b.id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
-                                        <td className="p-4 text-gray-300">{b.customer?.email}</td>
-                                        <td className="p-4 text-white font-medium">{b.tool?.name}</td>
+                                        <td className="p-4 text-gray-300">{b.customerEmail || b.customer?.email}</td>
+                                        <td className="p-4 text-white font-medium">{b.toolName || b.tool?.name}</td>
                                         <td className="p-4 text-gray-400 text-xs">{b.startDate}<br />{b.endDate}</td>
                                         <td className="p-4 text-gray-400">{b.totalDays}d</td>
                                         <td className="p-4 text-white font-semibold">₹{b.totalAmount?.toLocaleString('en-IN')}</td>

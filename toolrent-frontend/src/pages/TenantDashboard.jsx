@@ -117,8 +117,8 @@ export default function TenantDashboard() {
                                     <tbody>
                                         {bookings.map((b) => (
                                             <tr key={b.id} className="border-b border-gray-800/50">
-                                                <td className="py-3 text-gray-300">{b.customer?.email}</td>
-                                                <td className="py-3 text-gray-300">{b.tool?.name}</td>
+                                                <td className="py-3 text-gray-300">{b.customerEmail || b.customer?.email}</td>
+                                                <td className="py-3 text-gray-300">{b.toolName || b.tool?.name}</td>
                                                 <td className="py-3 text-gray-400">{b.startDate} – {b.endDate}</td>
                                                 <td className="py-3 text-white font-medium">₹{b.totalAmount?.toLocaleString('en-IN')}</td>
                                                 <td className="py-3">{statusBadge(b.status)}</td>

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 public class ToolRequest {
@@ -24,4 +25,13 @@ public class ToolRequest {
     private Integer quantity;
 
     private String category;
+
+    private String sku;
+
+    private String barcode;
+
+    @DecimalMin("0.0")
+    private BigDecimal replacementCost;
+
+    private LocalDate purchaseDate;
 }

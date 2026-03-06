@@ -2,6 +2,8 @@ package in.toolrent.auth.controller;
 
 import in.toolrent.auth.dto.AuthResponse;
 import in.toolrent.auth.dto.LoginRequest;
+import in.toolrent.auth.dto.RefreshTokenRequest;
+import in.toolrent.auth.dto.RegisterCustomerRequest;
 import in.toolrent.auth.dto.RegisterTenantRequest;
 import in.toolrent.auth.service.AuthService;
 import jakarta.validation.Valid;
@@ -32,6 +34,18 @@ public class AuthController {
     }
 
     /**
+     * POST /api/auth/register-customer
+     * Registers a customer under the currently resolved tenant.
+     */
+    @PostMapping("/register-customer")
+    public ResponseEntity<AuthResponse> registerCustomer(
+            @Valid @RequestBody RegisterCustomerRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(authService.registerCustomer(request));
+    }
+
+    /**
      * POST /api/auth/login
      */
     @PostMapping("/login")
@@ -42,10 +56,20 @@ public class AuthController {
 
     /**
      * POST /api/auth/refresh
+     * Body: { "refreshToken": "..." }
      */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody Map<String, String> body) {
-        // TODO: implement refresh token rotation using refresh_tokens table
-        return ResponseEntity.ok(Map.of("message", "Refresh endpoint — implement refresh token rotation"));
+    public ResponseEntity<AuthResponse> refresh(
+            @Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
+    }
+
+    /**
+     * GET /api/auth/health
+     * Health check endpoint used by Docker Compose.
+     */
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, String>> health() {
+        return ResponseEntity.ok(Map.of("status", "UP"));
     }
 }

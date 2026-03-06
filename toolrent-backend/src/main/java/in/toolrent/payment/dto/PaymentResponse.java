@@ -21,6 +21,8 @@ public class PaymentResponse {
     private BigDecimal             depositAmount;
     private BigDecimal             totalAmount;
     private String                 currency;
+    private BigDecimal             gatewayFee;
+    private BigDecimal             platformFee;
     private Payment.PaymentStatus  status;
     private LocalDateTime          createdAt;
 
@@ -34,6 +36,8 @@ public class PaymentResponse {
                 .depositAmount(p.getDepositAmount())
                 .totalAmount(p.getTotalAmount())
                 .currency(p.getCurrency())
+                .gatewayFee(p.getGatewayFee())
+                .platformFee(p.getPlatformFee())
                 .status(p.getStatus())
                 .createdAt(p.getCreatedAt())
                 .build();

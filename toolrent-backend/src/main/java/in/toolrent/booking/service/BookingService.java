@@ -88,6 +88,11 @@ public class BookingService {
                 .depositAmount(depositAmount)
                 .totalAmount(totalAmount)
                 .notes(request.getNotes())
+                .pickupTime(request.getPickupTime())
+                .returnTime(request.getReturnTime())
+                .bookingSource(request.getBookingSource() == null || request.getBookingSource().isBlank()
+                        ? "web"
+                        : request.getBookingSource().trim().toLowerCase())
                 .status(Booking.BookingStatus.PENDING)
                 .build());
 

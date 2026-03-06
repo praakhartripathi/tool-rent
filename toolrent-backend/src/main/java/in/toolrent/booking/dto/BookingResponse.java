@@ -30,6 +30,9 @@ public class BookingResponse {
     private BigDecimal              totalAmount;
     private Booking.BookingStatus   status;
     private String                  notes;
+    private LocalDateTime           pickupTime;
+    private LocalDateTime           returnTime;
+    private String                  bookingSource;
     private LocalDateTime           createdAt;
     private LocalDateTime           confirmedAt;
     private LocalDateTime           completedAt;
@@ -51,6 +54,9 @@ public class BookingResponse {
                 .totalAmount(b.getTotalAmount())
                 .status(b.getStatus())
                 .notes(b.getNotes())
+                .pickupTime(b.getPickupTime())
+                .returnTime(b.getReturnTime())
+                .bookingSource(b.getBookingSource())
                 .createdAt(b.getCreatedAt())
                 .confirmedAt(b.getConfirmedAt())
                 .completedAt(b.getCompletedAt())

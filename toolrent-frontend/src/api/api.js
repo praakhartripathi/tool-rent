@@ -5,6 +5,11 @@ const api = axios.create({
     headers: { 'Content-Type': 'application/json' },
 })
 
+const refreshClient = axios.create({
+    baseURL: '/api',
+    headers: { 'Content-Type': 'application/json' },
+})
+
 // Attach JWT token to every request
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('accessToken')
@@ -20,7 +25,39 @@ api.interceptors.request.use((config) => {
 // Auto-logout on 401
 api.interceptors.response.use(
     (res) => res,
-    (error) => {
+    async (error) => {
+        const originalRequest = error.config || {}
+        const isAuthEndpoint = originalRequest.url?.startsWith('/auth/')
+        const refreshToken = localStorage.getItem('refreshToken')
+
+        if (
+            error.response?.status === 401 &&
+            !originalRequest._retry &&
+            refreshToken &&
+            !isAuthEndpoint
+        ) {
+            originalRequest._retry = true
+            try {
+                const { data } = await refreshClient.post('/auth/refresh', { refreshToken })
+                localStorage.setItem('accessToken', data.accessToken)
+                localStorage.setItem('refreshToken', data.refreshToken)
+                const userData = {
+                    userId: data.userId,
+                    email: data.email,
+                    role: data.role,
+                    tenantId: data.tenantId,
+                    subdomain: data.subdomain,
+                    businessName: data.businessName,
+                }
+                localStorage.setItem('user', JSON.stringify(userData))
+                originalRequest.headers = originalRequest.headers || {}
+                originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
+                return api(originalRequest)
+            } catch {
+                // Fall through to forced logout
+            }
+        }
+
         if (error.response?.status === 401) {
             localStorage.clear()
             window.location.href = '/login'
@@ -31,7 +68,9 @@ api.interceptors.response.use(
 
 // ─── Auth ────────────────────────────────────────────
 export const registerTenant = (data) => api.post('/auth/register-tenant', data)
+export const registerCustomer = (data) => api.post('/auth/register-customer', data)
 export const login = (data) => api.post('/auth/login', data)
+export const refreshToken = (data) => api.post('/auth/refresh', data)
 
 // ─── Tools ───────────────────────────────────────────
 export const getTools = (adminView = false) => api.get(`/tools?adminView=${adminView}`)

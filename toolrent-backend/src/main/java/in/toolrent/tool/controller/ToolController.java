@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -32,6 +34,15 @@ public class ToolController {
     @GetMapping("/{id}")
     public ResponseEntity<ToolResponse> getToolById(@PathVariable UUID id) {
         return ResponseEntity.ok(toolService.getToolById(id));
+    }
+
+    /** GET /api/tools/{id}/availability?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd — public */
+    @GetMapping("/{id}/availability")
+    public ResponseEntity<Map<String, Object>> getToolAvailability(
+            @PathVariable UUID id,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) {
+        return ResponseEntity.ok(toolService.checkAvailability(id, startDate, endDate));
     }
 
     /** POST /api/tools — admin only */

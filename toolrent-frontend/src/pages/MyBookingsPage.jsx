@@ -42,7 +42,7 @@ export default function MyBookingsPage() {
                                             <Wrench size={18} className="text-brand-400" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-white">{b.tool?.name}</h3>
+                                            <h3 className="font-semibold text-white">{b.toolName || b.tool?.name}</h3>
                                             <p className="text-gray-400 text-xs mt-0.5">{b.startDate} → {b.endDate} ({b.totalDays} days)</p>
                                         </div>
                                     </div>

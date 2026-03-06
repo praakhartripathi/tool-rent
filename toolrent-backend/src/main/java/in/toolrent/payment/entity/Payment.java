@@ -44,6 +44,12 @@ public class Payment {
     @Column(nullable = false)
     private String currency = "INR";
 
+    @Column(name = "gateway_fee", precision = 10, scale = 2)
+    private BigDecimal gatewayFee = BigDecimal.ZERO;
+
+    @Column(name = "platform_fee", precision = 10, scale = 2)
+    private BigDecimal platformFee = BigDecimal.ZERO;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus status = PaymentStatus.CREATED;

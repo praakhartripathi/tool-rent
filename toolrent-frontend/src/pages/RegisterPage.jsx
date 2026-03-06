@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { registerTenant } from '../api/api'
 import toast from 'react-hot-toast'
-import { Wrench } from 'lucide-react'
+import { Wrench, Eye, EyeOff } from 'lucide-react'
 
 export default function RegisterPage() {
     const { setAuth } = useAuth()

@@ -76,6 +76,8 @@ public class PaymentService {
                     .depositAmount(booking.getDepositAmount())
                     .totalAmount(booking.getTotalAmount())
                     .currency("INR")
+                    .gatewayFee(BigDecimal.ZERO)
+                    .platformFee(BigDecimal.ZERO)
                     .status(Payment.PaymentStatus.CREATED)
                     .build());
 

@@ -58,6 +58,15 @@ public class Booking {
 
     private String notes;
 
+    @Column(name = "pickup_time")
+    private LocalDateTime pickupTime;
+
+    @Column(name = "return_time")
+    private LocalDateTime returnTime;
+
+    @Column(name = "booking_source")
+    private String bookingSource = "web";
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,10 @@ public class ToolResponse {
     private Integer     quantity;
     private Integer     availableQuantity;
     private String      category;
+    private String      sku;
+    private String      barcode;
+    private BigDecimal  replacementCost;
+    private LocalDate   purchaseDate;
     private boolean     isAvailable;
     private List<String> imageUrls;
     private LocalDateTime createdAt;
@@ -42,6 +47,10 @@ public class ToolResponse {
                 .quantity(tool.getQuantity())
                 .availableQuantity(tool.getAvailableQuantity())
                 .category(tool.getCategory())
+                .sku(tool.getSku())
+                .barcode(tool.getBarcode())
+                .replacementCost(tool.getReplacementCost())
+                .purchaseDate(tool.getPurchaseDate())
                 .isAvailable(tool.isAvailable())
                 .imageUrls(tool.getImages() != null
                         ? tool.getImages().stream().map(i -> i.getUrl()).collect(Collectors.toList())

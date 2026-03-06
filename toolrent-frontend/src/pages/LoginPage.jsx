@@ -3,13 +3,14 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { login } from '../api/api'
 import toast from 'react-hot-toast'
-import { Wrench } from 'lucide-react'
+import { Wrench, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
-    const { setAuth, isAdmin } = useAuth()
+    const { setAuth } = useAuth()
     const navigate = useNavigate()
     const [form, setForm] = useState({ email: '', password: '' })
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -47,8 +48,24 @@ export default function LoginPage() {
                     </div>
                     <div>
                         <label className="label">Password</label>
-                        <input type="password" className="input" placeholder="Your password"
-                            value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+                        <div className="relative">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                className="input pr-10"
+                                placeholder="Your password"
+                                value={form.password}
+                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-200"
+                                onClick={() => setShowPassword((v) => !v)}
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
                         {loading ? 'Signing in...' : 'Sign In →'}

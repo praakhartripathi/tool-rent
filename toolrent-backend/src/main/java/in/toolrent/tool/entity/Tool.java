@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,18 @@ public class Tool {
     private Integer availableQuantity = 1;
 
     private String category;
+
+    @Column(length = 100)
+    private String sku;
+
+    @Column(length = 100)
+    private String barcode;
+
+    @Column(name = "replacement_cost", precision = 10, scale = 2)
+    private BigDecimal replacementCost;
+
+    @Column(name = "purchase_date")
+    private LocalDate purchaseDate;
 
     @Column(name = "is_available")
     private boolean isAvailable = true;
